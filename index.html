@@ -1,0 +1,96 @@
+ <!DOCTYPE html>
+<html>
+<head>
+  <title>Lepota shop</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    body { font-family: Arial; background:#f4f4f4; padding:20px; }
+    .box { background:white; padding:15px; margin-bottom:15px; border-radius:10px; }
+    input, button { width:100%; padding:10px; margin:5px 0; }
+    .item { border-bottom:1px solid #ccc; padding:10px; }
+    .delete { background:red; color:white; }
+  </style>
+</head>
+
+<body>
+
+<h1>🛒<i> Lepota Shop</i></h1>
+
+<div class="box" id="loginBox">
+  <h2>Admin Login</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <a href="C:\Users\chulu\OneDrive\Pictures\evrgrnq.jpg">Login</a>
+</div>
+
+<div class="box" id="adminBox" style="display:none;">
+  <h2>Add Special</h2>
+  <input id="title" placeholder="Product name">
+  <input id="price" placeholder="Price">
+  <button onclick="addSpecial()">Add</button>
+</div>
+
+<div class="box">
+  <h2>Specials</h2>
+  <div id="list"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://tkpugzpaprbslkaqdnuk.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrcHVnenBhcHJic2xrYXFkbnVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTg4OTMsImV4cCI6MjA5MDgzNDg5M30.uAitIdWrR3tZrdz1oTjzd34CXCHrowvs-Jeb7LxLkzk";
+
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function login() {
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email, password
+    });
+
+    if(error) {
+      alert(error.message);
+    } else {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("adminBox").style.display = "block";
+    }
+  }
+
+  async function addSpecial() {
+    let title = document.getElementById("title").value;
+    let price = document.getElementById("price").value;
+
+    await supabase.from("specials").insert([{ title, price }]);
+    loadSpecials();
+  }
+
+  async function deleteSpecial(id) {
+    await supabase.from("specials").delete().eq("id", id);
+    loadSpecials();
+  }
+
+  async function loadSpecials() {
+    let { data } = await supabase.from("specials").select("*");
+
+    let list = document.getElementById("list");
+    list.innerHTML = "";
+
+    data.forEach(item => {
+      list.innerHTML += `
+        <div class="item">
+          <h3>${item.title}</h3>
+          <strong>${item.price}</strong><br>
+          <button class="delete" onclick="deleteSpecial(${item.id})">Remove</button>
+        </div>
+      `;
+    });
+  }
+
+  loadSpecials();
+</script>
+
+</body>
+</html>
